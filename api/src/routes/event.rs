@@ -1,26 +1,41 @@
-
+use crate::EventService;
 use actix_web::{post, web, HttpResponse, Result};
+use serde_json::json;
 use shared::model::event::Event;
-use crate::{ EventService};
+use tracing::{error, info, instrument};
 
 #[post("/fire")]
-pub async fn fire_event(event_service: web::Data<EventService>, event_dto: web::Json<EventDto>) -> Result<HttpResponse, > {
+#[instrument(skip(event_service, event_dto))]
+pub async fn fire_event(
+    event_service: web::Data<EventService>,
+    event_dto: web::Json<EventDto>,
+) -> Result<HttpResponse> {
+    info!("Received event request");
     let event = event_dto.into_inner().into_event();
-    event_service
-        .handle_event(&event)
-        .await
-        .map_err(|e| actix_web::error::ErrorInternalServerError(e.to_string()))?;
-    
-    Ok(HttpResponse::Ok().finish())
-
+    match event_service.handle_event(&event).await {
+        Ok(_) => {
+            info!("Successfully processed event");
+            Ok(HttpResponse::Ok().json(json!({
+                "status": "success",
+                "message": "Event processed successfully"
+            })))
+        }
+        Err(e) => {
+            error!("Failed to process event: {}", e);
+            Err(actix_web::error::ErrorInternalServerError(json!({
+                "status": "error",
+                "message": e.to_string()
+            })))
+        }
+    }
 }
 
 #[derive(serde::Deserialize)]
-pub struct EventDto { 
+pub struct EventDto {
     pub code: String,
     pub user_id: i32,
     pub ts: i64,
-    pub timezone: String
+    pub timezone: String,
 }
 
 impl EventDto {

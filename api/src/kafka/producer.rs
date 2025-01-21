@@ -1,9 +1,10 @@
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::ClientConfig;
+use shared::error::KafkaError;
 use std::time::Duration;
 
-use super::config::KafkaConfig;
-use crate::error::KafkaError;
+use crate::KafkaConfig;
+
 
 pub struct KafkaProducer {
     producer: FutureProducer,
@@ -12,7 +13,7 @@ pub struct KafkaProducer {
 impl KafkaProducer {
     pub fn new(config: &KafkaConfig) -> Result<Self, KafkaError> {
         let producer: FutureProducer = ClientConfig::new()
-            .set("bootstrap.servers", &config.bootstrap_servers)
+            .set("bootstrap.servers", &config.bootstrap_server)
             .set("client.id", &config.client_id)
             .create()
             .map_err(KafkaError::Producer)?;
