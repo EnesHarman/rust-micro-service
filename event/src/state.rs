@@ -7,8 +7,8 @@ pub struct AppState {
 
 impl AppState {
     pub async fn new() -> Result<Self, std::io::Error> {
-        let mongoUri = "mongodb://admin:password@localhost:27017/";
-        let client = Client::with_uri_str(mongoUri).await.map_err(|err| {
+        let mongo_uri = "mongodb://admin:password@localhost:27017/";
+        let client = Client::with_uri_str(mongo_uri).await.map_err(|err| {
             eprintln!("Failed to connect to MongoDB: {}", err);
             Err(err)
         }).unwrap_or_else(|err: Result<(), mongodb::error::Error>| {
