@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6.0    # Use the desired MongoDB version
+    container_name: mongodb_container
+    ports:
+      - "27017:27017"   # Map host port 27017 to container port 27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin   # Set the root username
+      MONGO_INITDB_ROOT_PASSWORD: password   # Set the root password
+    volumes:
+      - mongodb_data:/data/db   # Persist MongoDB data
+
+volumes:
+  mongodb_data:
